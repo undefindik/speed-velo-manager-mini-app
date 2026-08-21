@@ -24,15 +24,16 @@ if (!initData) {
     );
 }
 
-// Используем только для отображения.
-// Для проверки сервер использует tg.initData.
-const telegramId = tg.initDataUnsafe?.user?.id;
+const telegramId =
+    tg.initDataUnsafe?.user?.id;
 
 const telegramIdElement =
     document.getElementById("telegramId");
 
-telegramIdElement.textContent =
-    telegramId || "Не определён";
+if (telegramIdElement) {
+    telegramIdElement.textContent =
+        telegramId || "Не определён";
+}
 
 
 // ==========================
@@ -42,7 +43,8 @@ telegramIdElement.textContent =
 const canvas =
     document.getElementById("signatureCanvas");
 
-const ctx = canvas.getContext("2d");
+const ctx =
+    canvas.getContext("2d");
 
 const placeholder =
     document.getElementById("placeholder");
@@ -51,15 +53,32 @@ let drawing = false;
 let hasSignature = false;
 
 
+// ==========================
+// Canvas resize
+// ==========================
+
 function resizeCanvas() {
-    const rect = canvas.getBoundingClientRect();
 
-    const dpr = window.devicePixelRatio || 1;
+    const rect =
+        canvas.getBoundingClientRect();
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    const dpr =
+        window.devicePixelRatio || 1;
 
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    canvas.width =
+        rect.width * dpr;
+
+    canvas.height =
+        rect.height * dpr;
+
+    ctx.setTransform(
+        dpr,
+        0,
+        0,
+        dpr,
+        0,
+        0
+    );
 
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
@@ -69,12 +88,18 @@ function resizeCanvas() {
 
 resizeCanvas();
 
-window.addEventListener("resize", () => {
-    resizeCanvas();
-});
+window.addEventListener(
+    "resize",
+    resizeCanvas
+);
 
+
+// ==========================
+// Canvas position
+// ==========================
 
 function getPosition(event) {
+
     const rect =
         canvas.getBoundingClientRect();
 
@@ -85,6 +110,10 @@ function getPosition(event) {
 }
 
 
+// ==========================
+// Drawing
+// ==========================
+
 canvas.addEventListener(
     "pointerdown",
     (event) => {
@@ -92,17 +121,24 @@ canvas.addEventListener(
         drawing = true;
         hasSignature = true;
 
-        placeholder.style.display = "none";
+        placeholder.style.display =
+            "none";
 
         canvas.setPointerCapture(
             event.pointerId
         );
 
-        const { x, y } =
-            getPosition(event);
+        const {
+            x,
+            y
+        } = getPosition(event);
 
         ctx.beginPath();
-        ctx.moveTo(x, y);
+
+        ctx.moveTo(
+            x,
+            y
+        );
     }
 );
 
@@ -111,21 +147,32 @@ canvas.addEventListener(
     "pointermove",
     (event) => {
 
-        if (!drawing) return;
+        if (!drawing) {
+            return;
+        }
 
-        const { x, y } =
-            getPosition(event);
+        const {
+            x,
+            y
+        } = getPosition(event);
 
-        ctx.lineTo(x, y);
+        ctx.lineTo(
+            x,
+            y
+        );
+
         ctx.stroke();
     }
 );
 
 
 function stopDrawing() {
+
     drawing = false;
+
     ctx.closePath();
 }
+
 
 canvas.addEventListener(
     "pointerup",
@@ -144,15 +191,16 @@ canvas.addEventListener(
 
 
 // ==========================
-// Очистить
+// Clear
 // ==========================
 
-document
-    .getElementById("clearBtn")
-    .addEventListener("click", () => {
+const clearButton =
+    document.getElementById("clearBtn");
 
-        clearCanvas();
-    });
+clearButton.addEventListener(
+    "click",
+    clearCanvas
+);
 
 
 function clearCanvas() {
@@ -169,7 +217,8 @@ function clearCanvas() {
 
     hasSignature = false;
 
-    placeholder.style.display = "flex";
+    placeholder.style.display =
+        "flex";
 }
 
 
@@ -182,20 +231,25 @@ function showToast(message) {
     const toast =
         document.getElementById("toast");
 
-    toast.textContent = message;
+    toast.textContent =
+        message;
 
-    toast.classList.add("show");
+    toast.classList.add(
+        "show"
+    );
 
     setTimeout(() => {
 
-        toast.classList.remove("show");
+        toast.classList.remove(
+            "show"
+        );
 
     }, 2500);
 }
 
 
 // ==========================
-// Сохранение
+// Save
 // ==========================
 
 const saveButton =
@@ -225,38 +279,106 @@ saveButton.addEventListener(
 
         try {
 
-            // Получаем PNG
-            const blob =
-                await new Promise(resolve => {
+            console.log(
+                "=============================="
+            );
 
-                    canvas.toBlob(
-                        resolve,
-                        "image/png"
-                    );
+            console.log(
+                "SAVE SIGNATURE"
+            );
 
-                });
+            console.log(
+                "=============================="
+            );
 
 
-            if (!blob) {
+            // ==========================
+            // Telegram
+            // ==========================
+
+            console.log(
+                "Telegram initData exists:",
+                Boolean(tg.initData)
+            );
+
+            console.log(
+                "Telegram user:",
+                tg.initDataUnsafe?.user
+            );
+
+            console.log(
+                "Telegram ID:",
+                tg.initDataUnsafe?.user?.id
+            );
+
+
+            if (!tg.initData) {
 
                 throw new Error(
-                    "Не удалось создать изображение"
+                    "Telegram initData отсутствует"
                 );
             }
 
 
             // ==========================
-            // Отправляем в Supabase
-            // Edge Function
+            // PNG
+            // ==========================
+
+            const blob =
+                await new Promise(
+                    resolve => {
+
+                        canvas.toBlob(
+                            resolve,
+                            "image/png"
+                        );
+
+                    }
+                );
+
+
+            if (!blob) {
+
+                throw new Error(
+                    "Не удалось создать PNG"
+                );
+            }
+
+
+            console.log(
+                "Signature type:",
+                blob.type
+            );
+
+            console.log(
+                "Signature size:",
+                blob.size,
+                "bytes"
+            );
+
+
+            // ==========================
+            // Проверка размера
+            // ==========================
+
+            if (
+                blob.size >
+                2 * 1024 * 1024
+            ) {
+
+                throw new Error(
+                    "Файл подписи больше 2 MB"
+                );
+            }
+
+
+            // ==========================
+            // FormData
             // ==========================
 
             const formData =
                 new FormData();
 
-
-            // ВАЖНО:
-            // Здесь передаём настоящий
-            // подписанный Telegram initData
 
             formData.append(
                 "initData",
@@ -271,9 +393,31 @@ saveButton.addEventListener(
             );
 
 
+            console.log(
+                "FormData created"
+            );
+
+
+            // ==========================
+            // Supabase Edge Function
+            // ==========================
+
+            const functionUrl =
+                "https://rlclzghrupvskdgirbzo.supabase.co/functions/v1/save-signature";
+
+
+            console.log(
+                "Sending request:"
+            );
+
+            console.log(
+                functionUrl
+            );
+
+
             const response =
                 await fetch(
-                    "https://rlclzghrupvskdgirbzo.supabase.co/functions/v1/save-signature",
+                    functionUrl,
                     {
                         method: "POST",
                         body: formData
@@ -281,22 +425,113 @@ saveButton.addEventListener(
                 );
 
 
-            const result =
-                await response.json();
+            // ==========================
+            // HTTP
+            // ==========================
+
+            console.log(
+                "HTTP status:",
+                response.status
+            );
+
+            console.log(
+                "HTTP OK:",
+                response.ok
+            );
 
 
-            if (!response.ok) {
+            // ==========================
+            // Response
+            // ==========================
+
+            const responseText =
+                await response.text();
+
+
+            console.log(
+                "Raw Supabase response:"
+            );
+
+            console.log(
+                responseText
+            );
+
+
+            let result;
+
+            try {
+
+                result =
+                    JSON.parse(
+                        responseText
+                    );
+
+            } catch {
 
                 throw new Error(
-                    result.error ||
-                    "Ошибка сохранения"
+                    "Supabase вернул не JSON: " +
+                    responseText
                 );
             }
 
 
             console.log(
-                "Signature saved:",
+                "Parsed Supabase result:"
+            );
+
+            console.log(
                 result
+            );
+
+
+            // ==========================
+            // Error
+            // ==========================
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.error ||
+                    `HTTP ошибка ${response.status}`
+                );
+            }
+
+
+            if (
+                result.success !== true
+            ) {
+
+                throw new Error(
+                    result.error ||
+                    "Supabase не подтвердил сохранение"
+                );
+            }
+
+
+            // ==========================
+            // Success
+            // ==========================
+
+            console.log(
+                "=============================="
+            );
+
+            console.log(
+                "SIGNATURE SAVED"
+            );
+
+            console.log(
+                "Telegram ID:",
+                result.telegram_id
+            );
+
+            console.log(
+                "Signature URL:",
+                result.signature_url
+            );
+
+            console.log(
+                "=============================="
             );
 
 
@@ -306,19 +541,30 @@ saveButton.addEventListener(
 
 
             // ==========================
-            // Отправляем результат боту
+            // Send result to Telegram
             // ==========================
 
-            tg.sendData(
-                JSON.stringify({
-                    telegram_id:
-                        result.telegram_id,
+            if (
+                typeof tg.sendData ===
+                "function"
+            ) {
 
-                    signature_url:
-                        result.signature_url
-                })
-            );
+                tg.sendData(
+                    JSON.stringify({
+                        telegram_id:
+                            result.telegram_id,
 
+                        signature_url:
+                            result.signature_url
+                    })
+                );
+
+            }
+
+
+            // ==========================
+            // Close
+            // ==========================
 
             setTimeout(() => {
 
@@ -330,13 +576,24 @@ saveButton.addEventListener(
         } catch (error) {
 
             console.error(
-                "Save signature error:",
+                "=============================="
+            );
+
+            console.error(
+                "SAVE ERROR"
+            );
+
+            console.error(
                 error
+            );
+
+            console.error(
+                "=============================="
             );
 
 
             showToast(
-                error.message ||
+                error?.message ||
                 "Ошибка сохранения подписи"
             );
 
@@ -347,23 +604,25 @@ saveButton.addEventListener(
                 "loading"
             );
 
-            saveButton.disabled = false;
+            saveButton.disabled =
+                false;
         }
     }
 );
 
 
 // ==========================
-// Отмена
+// Cancel
 // ==========================
 
-document
-    .getElementById("cancelBtn")
-    .addEventListener(
-        "click",
-        () => {
+const cancelButton =
+    document.getElementById("cancelBtn");
 
-            tg.close();
+cancelButton.addEventListener(
+    "click",
+    () => {
 
-        }
-    );
+        tg.close();
+
+    }
+);
