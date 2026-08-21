@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Электронная подпись</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+
+<body>
+
+<main class="app">
+    <div class="header">
+        <h1>Электронная подпись</h1>
+        <p>Нарисуйте свою подпись в поле ниже</p>
+    </div>
+
+    <div class="user-card">
+        <span>Telegram ID</span>
+        <strong id="telegramId">—</strong>
+    </div>
+
+    <div class="signature-section">
+        <div class="section-title">
+            <span>Подпись</span>
+            <button id="clearBtn" type="button">Очистить</button>
+        </div>
+
+        <div class="canvas-wrapper">
+            <canvas id="signatureCanvas"></canvas>
+
+            <div class="canvas-placeholder" id="placeholder">
+                Нарисуйте подпись пальцем
+            </div>
+        </div>
+    </div>
+
+    <div class="actions">
+        <button class="btn btn-secondary" id="cancelBtn">
+            Отменить
+        </button>
+
+        <button class="btn btn-primary" id="saveBtn">
+            <span id="saveText">Сохранить</span>
+            <span class="loader" id="loader"></span>
+        </button>
+    </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="script.js"></script>
+</body>
+</html>
