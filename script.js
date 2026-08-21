@@ -1,51 +1,51 @@
-const SUPABASE_URL = "https://rlclzghrupvskdgirbzo.supabase.co";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsY2x6Z2hydXB2c2tkZ2lyYnpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2MjIyMjcsImV4cCI6MjA5NzE5ODIyN30.ILZw1pxtGgGp2iShw23DeKhZ4JufqnPVa-n7Xu8Sjqs";
-
-const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_ANON_KEY
-);
-
-
 // ==========================
 // Telegram
 // ==========================
 
 const tg = window.Telegram?.WebApp;
 
-if (tg) {
-    tg.ready();
-    tg.expand();
+if (!tg) {
+    throw new Error("Telegram WebApp недоступен");
 }
+
+tg.ready();
+tg.expand();
 
 
 // ==========================
-// Telegram ID
+// Telegram initData
 // ==========================
 
-const params = new URLSearchParams(window.location.search);
+const initData = tg.initData;
 
-let telegramId = params.get("telegram_id");
-
-// Если ID не передали в URL,
-// пробуем получить его из Telegram WebApp
-if (!telegramId && tg?.initDataUnsafe?.user?.id) {
-    telegramId = String(tg.initDataUnsafe.user.id);
+if (!initData) {
+    throw new Error(
+        "Telegram initData отсутствует. Откройте приложение через Telegram."
+    );
 }
 
-const telegramIdElement = document.getElementById("telegramId");
+// Используем только для отображения.
+// Для проверки сервер использует tg.initData.
+const telegramId = tg.initDataUnsafe?.user?.id;
 
-telegramIdElement.textContent = telegramId || "Не определён";
+const telegramIdElement =
+    document.getElementById("telegramId");
+
+telegramIdElement.textContent =
+    telegramId || "Не определён";
 
 
 // ==========================
 // Canvas
 // ==========================
 
-const canvas = document.getElementById("signatureCanvas");
+const canvas =
+    document.getElementById("signatureCanvas");
+
 const ctx = canvas.getContext("2d");
 
-const placeholder = document.getElementById("placeholder");
+const placeholder =
+    document.getElementById("placeholder");
 
 let drawing = false;
 let hasSignature = false;
@@ -59,7 +59,7 @@ function resizeCanvas() {
     canvas.width = rect.width * dpr;
     canvas.height = rect.height * dpr;
 
-    ctx.scale(dpr, dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
@@ -70,14 +70,13 @@ function resizeCanvas() {
 resizeCanvas();
 
 window.addEventListener("resize", () => {
-    // Если нужна поддержка resize без потери подписи,
-    // здесь лучше сохранять изображение перед изменением canvas.
     resizeCanvas();
 });
 
 
 function getPosition(event) {
-    const rect = canvas.getBoundingClientRect();
+    const rect =
+        canvas.getBoundingClientRect();
 
     return {
         x: event.clientX - rect.left,
@@ -86,29 +85,41 @@ function getPosition(event) {
 }
 
 
-canvas.addEventListener("pointerdown", (event) => {
-    drawing = true;
-    hasSignature = true;
+canvas.addEventListener(
+    "pointerdown",
+    (event) => {
 
-    placeholder.style.display = "none";
+        drawing = true;
+        hasSignature = true;
 
-    canvas.setPointerCapture(event.pointerId);
+        placeholder.style.display = "none";
 
-    const { x, y } = getPosition(event);
+        canvas.setPointerCapture(
+            event.pointerId
+        );
 
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-});
+        const { x, y } =
+            getPosition(event);
+
+        ctx.beginPath();
+        ctx.moveTo(x, y);
+    }
+);
 
 
-canvas.addEventListener("pointermove", (event) => {
-    if (!drawing) return;
+canvas.addEventListener(
+    "pointermove",
+    (event) => {
 
-    const { x, y } = getPosition(event);
+        if (!drawing) return;
 
-    ctx.lineTo(x, y);
-    ctx.stroke();
-});
+        const { x, y } =
+            getPosition(event);
+
+        ctx.lineTo(x, y);
+        ctx.stroke();
+    }
+);
 
 
 function stopDrawing() {
@@ -116,26 +127,44 @@ function stopDrawing() {
     ctx.closePath();
 }
 
-canvas.addEventListener("pointerup", stopDrawing);
-canvas.addEventListener("pointercancel", stopDrawing);
-canvas.addEventListener("pointerleave", stopDrawing);
+canvas.addEventListener(
+    "pointerup",
+    stopDrawing
+);
+
+canvas.addEventListener(
+    "pointercancel",
+    stopDrawing
+);
+
+canvas.addEventListener(
+    "pointerleave",
+    stopDrawing
+);
 
 
 // ==========================
 // Очистить
 // ==========================
 
-document.getElementById("clearBtn").addEventListener("click", () => {
-    clearCanvas();
-});
+document
+    .getElementById("clearBtn")
+    .addEventListener("click", () => {
+
+        clearCanvas();
+    });
 
 
 function clearCanvas() {
+
+    const rect =
+        canvas.getBoundingClientRect();
+
     ctx.clearRect(
         0,
         0,
-        canvas.width,
-        canvas.height
+        rect.width,
+        rect.height
     );
 
     hasSignature = false;
@@ -149,13 +178,18 @@ function clearCanvas() {
 // ==========================
 
 function showToast(message) {
-    const toast = document.getElementById("toast");
+
+    const toast =
+        document.getElementById("toast");
 
     toast.textContent = message;
+
     toast.classList.add("show");
 
     setTimeout(() => {
+
         toast.classList.remove("show");
+
     }, 2500);
 }
 
@@ -164,126 +198,172 @@ function showToast(message) {
 // Сохранение
 // ==========================
 
-const saveButton = document.getElementById("saveBtn");
+const saveButton =
+    document.getElementById("saveBtn");
 
-saveButton.addEventListener("click", async () => {
 
-    if (!telegramId) {
-        showToast("Telegram ID не найден");
-        return;
-    }
+saveButton.addEventListener(
+    "click",
+    async () => {
 
-    if (!hasSignature) {
-        showToast("Сначала нарисуйте подпись");
-        return;
-    }
+        if (!hasSignature) {
 
-    saveButton.classList.add("loading");
-    saveButton.disabled = true;
+            showToast(
+                "Сначала нарисуйте подпись"
+            );
 
-    try {
-
-        // Получаем PNG
-        const blob = await new Promise(resolve => {
-            canvas.toBlob(resolve, "image/png");
-        });
-
-        if (!blob) {
-            throw new Error("Не удалось создать изображение");
+            return;
         }
 
 
-        // Уникальное имя файла
-        const fileName =
-            `${telegramId}/${Date.now()}.png`;
-
-
-        // Загружаем подпись в Storage
-        const { error: uploadError } =
-            await supabaseClient.storage
-                .from("signatures")
-                .upload(fileName, blob, {
-                    contentType: "image/png",
-                    upsert: true
-                });
-
-
-        if (uploadError) {
-            throw uploadError;
-        }
-
-
-        // Получаем публичную ссылку
-        const {
-            data: publicUrlData
-        } = supabaseClient.storage
-            .from("signatures")
-            .getPublicUrl(fileName);
-
-
-        const signatureUrl =
-            publicUrlData.publicUrl;
-
-
-        // Записываем данные в таблицу
-        const { error: dbError } =
-            await supabaseClient
-                .from("signatures")
-                .upsert({
-                    telegram_id: telegramId,
-                    signature_url: signatureUrl,
-                    updated_at: new Date().toISOString()
-                }, {
-                    onConflict: "telegram_id"
-                });
-
-
-        if (dbError) {
-            throw dbError;
-        }
-
-
-        showToast("Подпись сохранена");
-
-        // Можно отправить результат Telegram-боту
-        if (tg) {
-            tg.sendData(JSON.stringify({
-                telegram_id: telegramId,
-                signature_url: signatureUrl
-            }));
-
-            setTimeout(() => {
-                tg.close();
-            }, 700);
-        }
-
-    } catch (error) {
-
-        console.error(error);
-
-        showToast(
-            "Ошибка сохранения подписи"
+        saveButton.classList.add(
+            "loading"
         );
 
-    } finally {
+        saveButton.disabled = true;
 
-        saveButton.classList.remove("loading");
-        saveButton.disabled = false;
+
+        try {
+
+            // Получаем PNG
+            const blob =
+                await new Promise(resolve => {
+
+                    canvas.toBlob(
+                        resolve,
+                        "image/png"
+                    );
+
+                });
+
+
+            if (!blob) {
+
+                throw new Error(
+                    "Не удалось создать изображение"
+                );
+            }
+
+
+            // ==========================
+            // Отправляем в Supabase
+            // Edge Function
+            // ==========================
+
+            const formData =
+                new FormData();
+
+
+            // ВАЖНО:
+            // Здесь передаём настоящий
+            // подписанный Telegram initData
+
+            formData.append(
+                "initData",
+                tg.initData
+            );
+
+
+            formData.append(
+                "signature",
+                blob,
+                "signature.png"
+            );
+
+
+            const response =
+                await fetch(
+                    "https://rlclzghrupvskdgirbzo.supabase.co/functions/v1/save-signature",
+                    {
+                        method: "POST",
+                        body: formData
+                    }
+                );
+
+
+            const result =
+                await response.json();
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    result.error ||
+                    "Ошибка сохранения"
+                );
+            }
+
+
+            console.log(
+                "Signature saved:",
+                result
+            );
+
+
+            showToast(
+                "Подпись сохранена"
+            );
+
+
+            // ==========================
+            // Отправляем результат боту
+            // ==========================
+
+            tg.sendData(
+                JSON.stringify({
+                    telegram_id:
+                        result.telegram_id,
+
+                    signature_url:
+                        result.signature_url
+                })
+            );
+
+
+            setTimeout(() => {
+
+                tg.close();
+
+            }, 700);
+
+
+        } catch (error) {
+
+            console.error(
+                "Save signature error:",
+                error
+            );
+
+
+            showToast(
+                error.message ||
+                "Ошибка сохранения подписи"
+            );
+
+
+        } finally {
+
+            saveButton.classList.remove(
+                "loading"
+            );
+
+            saveButton.disabled = false;
+        }
     }
-});
+);
 
 
 // ==========================
 // Отмена
 // ==========================
 
-document.getElementById("cancelBtn")
-    .addEventListener("click", () => {
+document
+    .getElementById("cancelBtn")
+    .addEventListener(
+        "click",
+        () => {
 
-        if (tg) {
             tg.close();
-        } else {
-            window.history.back();
-        }
 
-    });
+        }
+    );
