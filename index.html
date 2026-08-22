@@ -1,58 +1,245 @@
 <!DOCTYPE html>
 <html lang="ru">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Электронная подпись</title>
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    >
+
+    <title>Подписание документов</title>
 
     <link rel="stylesheet" href="style.css">
 
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
 <body>
 
 <main class="app">
-    <div class="header">
-        <h1>Электронная подпись</h1>
-        <p>Нарисуйте свою подпись в поле ниже</p>
-    </div>
+
+    <header class="header">
+        <h1>Подписание документов</h1>
+
+        <p>
+            Ознакомьтесь с документами перед
+            подтверждением заявки
+        </p>
+    </header>
+
 
     <div class="user-card">
         <span>Telegram ID</span>
         <strong id="telegramId">—</strong>
     </div>
 
-    <div class="signature-section">
-        <div class="section-title">
-            <span>Подпись</span>
-            <button id="clearBtn" type="button">Очистить</button>
-        </div>
 
-        <div class="canvas-wrapper">
-            <canvas id="signatureCanvas"></canvas>
+    <section class="documents">
 
-            <div class="canvas-placeholder" id="placeholder">
-                Нарисуйте подпись пальцем
+        <div class="section-header">
+            <div>
+                <h2>Документы</h2>
+                <p>Нажмите на документ, чтобы ознакомиться</p>
             </div>
         </div>
-    </div>
+
+
+        <a
+            class="document"
+            href="docs/user-agreement.pdf"
+            target="_blank"
+        >
+            <div class="document-content">
+
+                <span class="document-label">
+                    Документ 01
+                </span>
+
+                <h3>
+                    Пользовательское соглашение
+                </h3>
+
+                <p>
+                    Основные условия использования
+                    приложения Speed Velo,
+                    права и обязанности пользователя.
+                </p>
+
+            </div>
+
+            <span class="document-arrow">
+                →
+            </span>
+        </a>
+
+
+        <a
+            class="document"
+            href="docs/personal-data.pdf"
+            target="_blank"
+        >
+            <div class="document-content">
+
+                <span class="document-label">
+                    Документ 02
+                </span>
+
+                <h3>
+                    Согласие на обработку
+                    персональных данных
+                </h3>
+
+                <p>
+                    Условия обработки, хранения
+                    и использования персональных
+                    данных пользователя.
+                </p>
+
+            </div>
+
+            <span class="document-arrow">
+                →
+            </span>
+        </a>
+
+
+        <a
+            class="document"
+            href="docs/license-procedure.pdf"
+            target="_blank"
+        >
+            <div class="document-content">
+
+                <span class="document-label">
+                    Документ 03
+                </span>
+
+                <h3>
+                    Порядок рассмотрения заявки
+                </h3>
+
+                <p>
+                    Порядок подачи, рассмотрения
+                    и принятия решения по заявке
+                    на предоставление лицензии.
+                </p>
+
+            </div>
+
+            <span class="document-arrow">
+                →
+            </span>
+        </a>
+
+
+        <a
+            class="document"
+            href="docs/access-rules.pdf"
+            target="_blank"
+        >
+            <div class="document-content">
+
+                <span class="document-label">
+                    Документ 04
+                </span>
+
+                <h3>
+                    Правила предоставления доступа
+                </h3>
+
+                <p>
+                    Условия предоставления,
+                    использования и прекращения
+                    доступа к приложению Speed Velo.
+                </p>
+
+            </div>
+
+            <span class="document-arrow">
+                →
+            </span>
+        </a>
+
+    </section>
+
+
+    <section class="signature-section">
+
+        <div class="section-header signature-header">
+
+            <div>
+                <h2>Электронная подпись</h2>
+
+                <p>
+                    Поставьте подпись в поле ниже
+                </p>
+            </div>
+
+            <button
+                id="clearBtn"
+                type="button"
+            >
+                Очистить
+            </button>
+
+        </div>
+
+
+        <div class="canvas-wrapper">
+
+            <canvas id="signatureCanvas"></canvas>
+
+            <div
+                class="canvas-placeholder"
+                id="placeholder"
+            >
+                Нарисуйте подпись
+            </div>
+
+        </div>
+
+    </section>
+
 
     <div class="actions">
-        <button class="btn btn-secondary" id="cancelBtn">
+
+        <button
+            class="btn btn-secondary"
+            id="cancelBtn"
+            type="button"
+        >
             Отменить
         </button>
 
-        <button class="btn btn-primary" id="saveBtn">
-            <span id="saveText">Сохранить</span>
-            <span class="loader" id="loader"></span>
+        <button
+            class="btn btn-primary"
+            id="saveBtn"
+            type="button"
+        >
+            <span id="saveText">
+                Сохранить
+            </span>
+
+            <span
+                class="loader"
+                id="loader"
+            ></span>
         </button>
+
     </div>
+
 </main>
 
-<div class="toast" id="toast"></div>
+
+<div
+    class="toast"
+    id="toast"
+></div>
+
 
 <script src="script.js"></script>
+
 </body>
 </html>
