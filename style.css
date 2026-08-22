@@ -404,6 +404,10 @@ button {
         translate(-50%, 0);
 }
 
+.docs-signed-title {
+    margin-bottom: 30px;
+}
+
 /* =========================================
    SUCCESS MODAL
 ========================================= */
@@ -493,8 +497,6 @@ button {
 /* Заголовок */
 
 .success-modal h2 {
-    margin: 0 0 10px;
-
     font-size: 21px;
     font-weight: 600;
 
