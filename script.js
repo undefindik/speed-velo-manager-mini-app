@@ -12,13 +12,15 @@ tg.ready();
 tg.expand();
 
 // ======================================================
-// SESSION ID
+// SESSION ID & TELEGRAM ID FROM URL
 // ======================================================
 
 const urlParams = new URLSearchParams(window.location.search);
 const sessionId = urlParams.get('sessionId');
+const telegramIdFromUrl = urlParams.get('telegramId');
 
 console.log('Session ID:', sessionId);
+console.log('Telegram ID from URL:', telegramIdFromUrl);
 
 if (!sessionId) {
     console.warn('Session ID не найден в URL');
@@ -35,10 +37,14 @@ if (!initData) {
 }
 
 // ======================================================
-// TELEGRAM USER
+// TELEGRAM USER (приоритет у URL)
 // ======================================================
 
-const telegramId = tg.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null;
+const telegramIdFromInit = tg.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null;
+const telegramId = telegramIdFromUrl || telegramIdFromInit;
+
+console.log('Telegram ID from initData:', telegramIdFromInit);
+console.log('Final Telegram ID:', telegramId);
 
 const telegramIdElement = document.getElementById("telegramId");
 
@@ -160,7 +166,7 @@ function stopDrawing(event) {
 
     try {
         canvas.releasePointerCapture(event.pointerId);
-    } catch (error) {}
+    } catch (_) {}
 }
 
 canvas.addEventListener("pointerup", stopDrawing);
@@ -241,7 +247,7 @@ if (saveButton) {
 
 async function saveSignature() {
     if (!telegramId) {
-        showToast("Telegram ID не найден");
+        showToast("Telegram ID не найден. Пожалуйста, откройте приложение через Telegram.");
         return;
     }
 
@@ -282,6 +288,7 @@ async function saveSignature() {
         const formData = new FormData();
         formData.append("initData", initData);
         formData.append("signature", blob, "signature.png");
+        formData.append("telegramId", telegramId);
 
         if (sessionId) {
             formData.append("sessionId", sessionId);
@@ -360,3 +367,28 @@ if (cancelButton) {
         tg.close();
     });
 }
+
+// ======================================================
+// KEYBOARD SHORTCUTS
+// ======================================================
+
+document.addEventListener("keydown", (event) => {
+    // Ctrl+Enter или Cmd+Enter для сохранения
+    if ((event.ctrlKey || event.metaKey) && event.key === "Enter") {
+        event.preventDefault();
+        if (saveButton && !saveButton.disabled) {
+            saveButton.click();
+        }
+    }
+    
+    // Escape для закрытия
+    if (event.key === "Escape") {
+        tg.close();
+    }
+});
+
+console.log("================================");
+console.log("WebApp готов к работе");
+console.log("Telegram ID:", telegramId);
+console.log("Session ID:", sessionId);
+console.log("================================");
